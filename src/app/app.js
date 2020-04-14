@@ -5,14 +5,13 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Login from './login';
 import Home from './home';
 
-
 class App extends React.Component {
   render() {
     return (
       <Router >
         <div>
           <Route exact path="/" component={Login} />
-          <Route path="/Home" component={Home} />
+          <Route path="/Home/:username" component={Home} />
         </div>
       </Router>
     )
