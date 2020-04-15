@@ -1,18 +1,19 @@
 import React from 'react';
-
 // import ant design mobile
 import 'antd-mobile/dist/antd-mobile.css';  // or 'antd-mobile/dist/antd-mobile.less'
-import { WhiteSpace, NavBar, List, InputItem, Tabs, Badge, Button, Toast, Icon, ListView } from 'antd-mobile';
+import { WhiteSpace, NavBar, List, InputItem, Tabs, Badge, Button, Toast, Icon, ListView, Switch, Stepper, Range } from 'antd-mobile';
 import { useParams } from "react-router-dom";
+import { createForm } from 'rc-form';
 
-const tabs = [
-    { title: <Badge dot>买</Badge> },
-    { title: <Badge dot>卖</Badge> },
-];
 
-const Item = List.Item;
+
 
 function Home() {
+
+    const tabs = [
+        { title: <Badge dot>买</Badge> },
+        { title: <Badge dot>卖</Badge> },
+    ];
 
     let { username } = useParams();
 
@@ -30,61 +31,209 @@ function Home() {
                 onTabClick={(tab, index) => { console.log('onTabClick', index, tab); }}
             >
                 <div>
-                    <StockList />
+                    <Demo />
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', direction: 'column' }}>
-                    <List renderHeader={() => '欢迎使用'}>
-                        <InputItem
-                            type="price"
-                            placeholder="请输入您的大头菜收购价"
-                        >收购价</InputItem>
-                        <InputItem
-                            type="password_island"
-                            placeholder="请输入您的登岛密码"
-                        >登岛密码</InputItem>
-                        <InputItem
-                            type="sn"
-                            placeholder="请输入您的SN编号"
-                            defaultValue=""
-                        >SN编号</InputItem>
-                        <Button type="primary" onClick={publicButton}>发布</Button><WhiteSpace />
-                    </List>
-
+                    <BasicInputWrapper />
                 </div>
             </Tabs>
             <WhiteSpace />
         </div>);
 }
 
-class StockList extends React.Component {
-    state = {
-        disabled: false,
+const data = [
+    {
+        data_username: 'apple',
+        data_sn: '15556951659',
+        data_price: '350',
+        data_require: '机票一张',
+        data_time_start: '8',
+        data_time_end: '10',
+        data_visitor_count: '5'
+    },
+];
+const NUM_ROWS = 10;
+let pageIndex = 0;
+
+function genData(pIndex = 0) {
+    const dataBlob = {};
+    for (let i = 0; i < NUM_ROWS; i++) {
+        const ii = (pIndex * NUM_ROWS) + i;
+        dataBlob[`${ii}`] = `row - ${ii}`;
+    }
+    return dataBlob;
+}
+
+class Demo extends React.Component {
+    constructor(props) {
+        super(props);
+        const dataSource = new ListView.DataSource({
+            rowHasChanged: (row1, row2) => row1 !== row2,
+        });
+
+        this.state = {
+            dataSource,
+            isLoading: true,
+        };
+    }
+
+    componentDidMount() {
+        setTimeout(() => {
+            this.rData = genData();
+            this.setState({
+                dataSource: this.state.dataSource.cloneWithRows(this.rData),
+                isLoading: false,
+            });
+        }, 600);
+    }
+
+    onEndReached = (event) => {
+
+        if (this.state.isLoading && !this.state.hasMore) {
+            return;
+        }
+        console.log('reach end', event);
+        this.setState({ isLoading: true });
+        setTimeout(() => {
+            this.rData = { ...this.rData, ...genData(++pageIndex) };
+            this.setState({
+                dataSource: this.state.dataSource.cloneWithRows(this.rData),
+                isLoading: false,
+            });
+        }, 1000);
     }
 
     render() {
-        return (<div>
-            <List renderHeader={() => 'Basic Style'} className="my-list">
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-                <Item extra={'extra content'}>Title</Item>
-
-            </List>
-        </div>);
+        const separator = (sectionID, rowID) => (
+            <div
+                key={`${sectionID}-${rowID}`}
+                style={{
+                    backgroundColor: '#F5F5F9',
+                    height: 8,
+                    borderTop: '1px solid #ECECED',
+                    borderBottom: '1px solid #ECECED',
+                }}
+            />
+        );
+        let index = data.length - 1;
+        const row = (rowData, sectionID, rowID) => {
+            if (index < 0) {
+                index = data.length - 1;
+            }
+            const obj = data[index--];
+            return (
+                <div>
+                    <div>
+                        <List.Item extra={<Button type="primary" size="small" inline>预约登岛</Button>} multipleLine>
+                            <span style={{ fontSize: '30px', color: '#FF6E27' }}>¥{obj.data_price} </span>
+                            <span style={{ fontSize: '15px', color: 'grey' }}> {obj.data_time_start + '-' + obj.data_time_end + '点开放'} </span>
+                            <List.Item.Brief>
+                                <div>岛主编号:{obj.data_sn}</div>
+                                <div>登岛条件:{obj.data_require}</div>
+                            </List.Item.Brief>
+                        </List.Item>
+                    </div>
+                </div>
+            );
+        };
+        return (
+            <ListView
+                ref={el => this.lv = el}
+                dataSource={this.state.dataSource}
+                renderHeader={() => <span>查看今天的收购价</span>}
+                renderFooter={() => (<div style={{ padding: 30, textAlign: 'center' }}>
+                    {this.state.isLoading ? 'Loading...' : 'Loaded'}
+                </div>)}
+                renderRow={row}
+                renderSeparator={separator}
+                className="am-list"
+                pageSize={4}
+                useBodyScroll
+                onScroll={() => { console.log('scroll'); }}
+                scrollRenderAheadDistance={500}
+                onEndReached={this.onEndReached}
+                onEndReachedThreshold={10}
+            />
+        );
     }
 }
+
+const Item = List.Item;
+const std = { 0: 0, 3: 3, 6: 6, 9: 9, 12: 12, 15: 15, 18: 18, 21: 21, 24: 24 }
+
+class BasicInput extends React.Component {
+    state = {
+        value: 1,
+    }
+    onSubmit = () => {
+        this.props.form.validateFields({ force: true }, (error) => {
+            if (!error) {
+                console.log(this.props.form.getFieldsValue());
+            } else {
+                alert('Validation failed');
+            }
+        });
+    }
+    onReset = () => {
+        this.props.form.resetFields();
+    }
+    validateAccount = (rule, value, callback) => {
+        if (value > 100) {
+            callback();
+        } else {
+            callback(new Error('价格应大于100'));
+        }
+    }
+    render() {
+        const { getFieldProps, getFieldError } = this.props.form;
+
+        return (<form>
+            <List
+                renderHeader={() => '公布您的岛屿'}
+                renderFooter={() => getFieldError('price') && getFieldError('price').join(',')}
+            >
+                <InputItem
+                    {...getFieldProps('price', {
+                        // initialValue: 'little ant',
+                        rules: [
+                            { required: true, message: '请输入收购价' },
+                            { validator: this.validateAccount },
+                        ],
+                    })}
+                    clear
+                    error={!!getFieldError('price')}
+                    onErrorClick={() => {
+                        alert(getFieldError('price').join('且'));
+                    }}
+                    placeholder="请输入收购价"
+                >收购价</InputItem>
+                <InputItem {...getFieldProps('password')} placeholder="请输入岛屿密码" type="password">
+                    登岛密码
+                </InputItem>
+                <InputItem
+                    {...getFieldProps('requirment', {
+                        // initialValue: 'little ant',
+                    })}
+                    placeholder="设置您的登岛条件"
+                >登岛条件</InputItem>
+
+                <Item
+                    extra={<Switch {...getFieldProps('1', { initialValue: true, valuePropName: 'checked' })} />}
+                >公布SN号</Item>
+                <Item>
+                    <div>岛屿开放时间段</div>
+                    <div style={{ padding: 20, height: 50 }}>
+                        <Range defaultValue={[8, 16]} min={0}
+                            max={24} step={1} marks={std} /></div></Item>
+                <Item>
+                    <Button type="primary" onClick={this.onSubmit}>发布</Button>
+                </Item>
+            </List>
+        </form>);
+    }
+}
+
+const BasicInputWrapper = createForm()(BasicInput);
 
 export default Home;
