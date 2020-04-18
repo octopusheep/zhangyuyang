@@ -1,15 +1,17 @@
 import React from 'react';
 // import ant design mobile
 import 'antd-mobile/dist/antd-mobile.css';  // or 'antd-mobile/dist/antd-mobile.less'
-import { WhiteSpace, NavBar, List, InputItem, Tabs, Badge, Button, Toast, Icon, ListView, Switch, Stepper, Range } from 'antd-mobile';
-import { useParams } from "react-router-dom";
+import { WhiteSpace, NavBar, List, InputItem, Tabs, Badge, Button, Toast, Icon, ListView, Switch, Popover, Range } from 'antd-mobile';
+import { useParams,useHistory} from "react-router-dom";
 import { createForm } from 'rc-form';
 
 
 
 
-function Home() {
 
+function Home() {
+    
+    let history = useHistory();
     const tabs = [
         { title: <Badge dot>买</Badge> },
         { title: <Badge dot>卖</Badge> },
@@ -20,11 +22,69 @@ function Home() {
     function publicButton() {
         Toast.success('Public information success !!!', 1);
     }
+
+    const Item = Popover.Item;
+
+    class Navi extends React.Component {
+        state = {
+            visible: false,
+            selected: '',
+        };
+        onSelect = (opt) => {
+            console.log(opt.props.value);
+            if(opt.props.value=='quit'){
+                history.push(`/`);
+            }
+            this.setState({
+                visible: false,
+                selected: opt.props.value,
+            });
+        };
+        handleVisibleChange = (visible) => {
+            this.setState({
+                visible,
+            });
+        };
+        render() {
+            return (<div>
+                <NavBar
+                    mode="light"
+                    rightContent={
+                        <Popover mask
+                            overlayClassName="fortest"
+                            overlayStyle={{ color: 'currentColor' }}
+                            visible={this.state.visible}
+                            overlay={[
+                                (<Item key="0" value="quit">退出登录</Item>),
+                            ]}
+                            align={{
+                                overflow: { adjustY: 0, adjustX: 0 },
+                                offset: [-10, 0],
+                            }}
+                            onVisibleChange={this.handleVisibleChange}
+                            onSelect={this.onSelect}
+                        >
+                            <div style={{
+                                height: '100%',
+                                padding: '0 15px',
+                                marginRight: '-15px',
+                                display: 'flex',
+                                alignItems: 'center',
+                            }}
+                            >
+                                <Icon type="ellipsis" />
+                            </div>
+                        </Popover>
+                    }
+                >
+                    你好，{username}
+                </NavBar>
+            </div>);
+        }
+    }
     return (
         <div>
-            <NavBar mode="light" rightContent={[
-                <Icon key="0" type="ellipsis" />,
-            ]}>你好，{username}</NavBar>
+            <Navi />
             <Tabs tabs={tabs}
                 initialPage={0}
                 onChange={(tab, index) => { console.log('onChange', index, tab); }}
