@@ -115,6 +115,8 @@ function Login() {
                         })
                         .catch(function (error) {
                             console.log(error);
+                            Toast.fail('账号或密码已存在，请重新注册', 1);
+                            history.push(`/`);
                         });
                 }
             });
