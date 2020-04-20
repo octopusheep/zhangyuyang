@@ -7,7 +7,7 @@ import { useParams, useHistory } from "react-router-dom";
 import { createForm } from 'rc-form';
 
 
-axios.defaults.baseURL = 'http://localhost:3001';
+axios.defaults.baseURL = 'http://118.89.23.205:3001';
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 axios.defaults.withCredentials = false;
 
@@ -210,6 +210,7 @@ function Home() {
                             island_start: value.register_island_time[0],
                             island_end: value.register_island_time[1],
                             island_sn: get_sn,
+			    island_num: '0'
                         })
                             .then(function (response) {
 

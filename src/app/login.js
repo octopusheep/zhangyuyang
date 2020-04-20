@@ -7,7 +7,7 @@ import { WhiteSpace, NavBar, List, InputItem, Tabs, Badge, Button, Toast } from 
 import { useHistory } from "react-router-dom";
 import { createForm } from 'rc-form';
 
-axios.defaults.baseURL = 'http://localhost:3001';
+axios.defaults.baseURL = 'http://118.89.23.205:3001';
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 axios.defaults.withCredentials = false;
 
